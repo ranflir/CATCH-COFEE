@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { AuthRepository } from './auth.repository';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 
 @Global()
 @Module({
@@ -27,7 +28,9 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
   providers: [
     AuthService,
     AuthRepository,
+    // JwtAuthGuard가 먼저 실행되어 request.user 주입 → RolesGuard가 역할 검증.
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
   ],
   exports: [AuthRepository],
 })
