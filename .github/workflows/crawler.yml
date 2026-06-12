@@ -1,0 +1,44 @@
+name: Crawler
+
+on:
+  schedule:
+    # 매시 정각 (UTC) — 수집 + 알림 디스패치
+    - cron: "0 * * * *"
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "crawl | dispatch | all"
+        required: false
+        default: "all"
+
+jobs:
+  run:
+    name: Crawl & Dispatch
+    runs-on: ubuntu-latest
+    # DATABASE_URL 시크릿이 설정된 경우에만 실행
+    if: ${{ vars.CRAWLER_ENABLED == 'true' }}
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      EXPO_ACCESS_TOKEN: ${{ secrets.EXPO_ACCESS_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build db + crawler
+        run: pnpm --filter @catch-coffee/db build && pnpm --filter @catch-coffee/crawler build
+
+      - name: Run crawler
+        run: node apps/crawler/dist/main.js ${{ inputs.command || 'all' }}
