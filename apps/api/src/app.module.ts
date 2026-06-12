@@ -15,6 +15,7 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { PaymentAlertsModule } from './alerts/payment-alerts.module';
 import { AdminModule } from './admin/admin.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { DevicesModule } from './devices/devices.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { HealthModule } from './health/health.module';
 
@@ -39,6 +40,7 @@ import { HealthModule } from './health/health.module';
     PaymentAlertsModule,
     AdminModule,
     NotificationsModule,
+    DevicesModule,
     UploadsModule,
     HealthModule,
   ],
