@@ -1,0 +1,109 @@
+import { and, eq, gte, isNull, sql } from 'drizzle-orm';
+import {
+  getDb,
+  discounts,
+  favorites,
+  paymentAlerts,
+  notifications,
+  type Discount,
+  type Notification,
+} from '@catch-coffee/db';
+import { log } from '../logger';
+
+type NotifyType = Extract<Notification['type'], 'cafe_discount' | 'payment_discount'>;
+
+/**
+ * 최근 생성된 할인에 대해 대상 사용자에게 알림(inbox) 생성.
+ * - 즐겨찾기(notifyEnabled) 카페의 신규 할인 → cafe_discount
+ * - 구독한 결제수단(payment_alerts)과 매칭되는 할인 → payment_discount
+ *
+ * 중복 발송은 notifications.data->>'discountId' 로 멱등 처리.
+ * 실제 푸시 전송(FCM/Expo, user_devices)은 MVP 스텁(로그)로 대체.
+ */
+export async function dispatchNotifications(sinceMinutes = 60): Promise<void> {
+  const db = getDb();
+  const since = new Date(Date.now() - sinceMinutes * 60_000);
+
+  const recent = await db
+    .select()
+    .from(discounts)
+    .where(and(gte(discounts.createdAt, since), isNull(discounts.deletedAt)));
+
+  log(`dispatch: ${recent.length} discount(s) since ${since.toISOString()}`);
+
+  let created = 0;
+  for (const discount of recent) {
+    const targets = await resolveTargets(db, discount);
+    for (const [userId, type] of targets) {
+      if (await notifyOnce(db, userId, type, discount)) {
+        created += 1;
+      }
+    }
+  }
+  log(`dispatch: ${created} notification(s) created`);
+}
+
+async function resolveTargets(
+  db: ReturnType<typeof getDb>,
+  discount: Discount,
+): Promise<Map<string, NotifyType>> {
+  const targets = new Map<string, NotifyType>();
+
+  const favUsers = await db
+    .select({ userId: favorites.userId })
+    .from(favorites)
+    .where(and(eq(favorites.cafeId, discount.cafeId), eq(favorites.notifyEnabled, true)));
+  for (const f of favUsers) {
+    targets.set(f.userId, 'cafe_discount');
+  }
+
+  if (discount.paymentType) {
+    const alertUsers = await db
+      .select({ userId: paymentAlerts.userId })
+      .from(paymentAlerts)
+      .where(eq(paymentAlerts.paymentType, discount.paymentType));
+    for (const a of alertUsers) {
+      // 즐겨찾기 알림이 이미 잡혔으면 중복 생성하지 않음
+      if (!targets.has(a.userId)) {
+        targets.set(a.userId, 'payment_discount');
+      }
+    }
+  }
+
+  return targets;
+}
+
+async function notifyOnce(
+  db: ReturnType<typeof getDb>,
+  userId: string,
+  type: NotifyType,
+  discount: Discount,
+): Promise<boolean> {
+  const existing = await db
+    .select({ id: notifications.id })
+    .from(notifications)
+    .where(
+      and(
+        eq(notifications.userId, userId),
+        eq(notifications.type, type),
+        sql`${notifications.data}->>'discountId' = ${discount.id}`,
+      ),
+    )
+    .limit(1);
+
+  if (existing.length > 0) {
+    return false;
+  }
+
+  await db.insert(notifications).values({
+    userId,
+    type,
+    title: '새로운 할인 정보',
+    body: discount.title,
+    data: { discountId: discount.id, cafeId: discount.cafeId },
+  });
+
+  // TODO: user_devices 의 푸시 토큰으로 FCM/Expo 전송
+  log(`notify ${userId} (${type}) discount=${discount.id}`);
+  return true;
+}
