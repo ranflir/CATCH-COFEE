@@ -22,7 +22,14 @@
     "test": {
       "dependsOn": ["^build"],
       "inputs": ["src/**", "test/**"],
-      "outputs": ["coverage/**"]
+      "outputs": ["coverage/**"],
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "JWT_ACCESS_SECRET",
+        "JWT_REFRESH_SECRET",
+        "ENCRYPTION_KEY",
+        "REDIS_URL"
+      ]
     },
     "clean": {
       "cache": false
