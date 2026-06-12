@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import {
   discountReports,
   reportConfirmations,
@@ -11,6 +11,15 @@ import { DRIZZLE, type DrizzleDB } from '../database/database.module';
 
 /** 3인 확인 시 자동 등록 */
 export const AUTO_REGISTER_THRESHOLD = 3;
+
+/** 검수 큐에서 액션 가능한 상태 */
+const REVIEWABLE_STATUSES = ['pending', 'reviewing'] as const;
+
+export type ReviewOutcome =
+  | { outcome: 'not_found' }
+  | { outcome: 'closed'; report: DiscountReport }
+  | { outcome: 'approved'; report: DiscountReport; discountId: string }
+  | { outcome: 'rejected'; report: DiscountReport };
 
 export type ConfirmOutcome =
   | { outcome: 'not_found' }
@@ -60,6 +69,110 @@ export class ReportsRepository {
       .from(discountReports)
       .where(and(...conditions))
       .orderBy(desc(discountReports.createdAt));
+  }
+
+  /** 관리자 검수 큐 — 상태별(기본 pending/reviewing) 오래된 순. */
+  listForReview(params: {
+    statuses: DiscountReport['status'][];
+    page: number;
+    limit: number;
+  }): Promise<DiscountReport[]> {
+    const { statuses, page, limit } = params;
+    return this.db
+      .select()
+      .from(discountReports)
+      .where(
+        and(inArray(discountReports.status, statuses), isNull(discountReports.deletedAt)),
+      )
+      .orderBy(asc(discountReports.createdAt))
+      .limit(limit)
+      .offset((page - 1) * limit);
+  }
+
+  /** 승인 — 할인 생성(source=report) + 상태 approved 를 단일 트랜잭션으로 처리. */
+  async approve(reportId: string, reviewerId: string): Promise<ReviewOutcome> {
+    return this.db.transaction(async (tx) => {
+      const [report] = await tx
+        .select()
+        .from(discountReports)
+        .where(and(eq(discountReports.id, reportId), isNull(discountReports.deletedAt)))
+        .for('update')
+        .limit(1);
+
+      if (!report) return { outcome: 'not_found' };
+      if (!REVIEWABLE_STATUSES.includes(report.status as (typeof REVIEWABLE_STATUSES)[number])) {
+        return { outcome: 'closed', report };
+      }
+
+      const [created] = await tx
+        .insert(discounts)
+        .values({
+          cafeId: report.cafeId,
+          source: 'report',
+          title: report.title,
+          discountType: report.discountType,
+          discountValue: report.discountValue,
+          conditions: report.conditions,
+          startAt: report.startAt,
+          endAt: report.endAt,
+          status: 'active',
+          reportId: report.id,
+        })
+        .returning({ id: discounts.id });
+
+      if (!created) {
+        throw new Error('Failed to create discount on approve');
+      }
+
+      const [updated] = await tx
+        .update(discountReports)
+        .set({
+          status: 'approved',
+          registeredDiscountId: created.id,
+          metadata: { reviewedBy: reviewerId, reviewedAt: new Date().toISOString() },
+          updatedAt: new Date(),
+          version: sql`${discountReports.version} + 1`,
+        })
+        .where(eq(discountReports.id, reportId))
+        .returning();
+
+      return { outcome: 'approved', report: updated ?? report, discountId: created.id };
+    });
+  }
+
+  /** 반려 — 상태 rejected + 사유 저장. */
+  async reject(
+    reportId: string,
+    reviewerId: string,
+    reason: string,
+  ): Promise<ReviewOutcome> {
+    return this.db.transaction(async (tx) => {
+      const [report] = await tx
+        .select()
+        .from(discountReports)
+        .where(and(eq(discountReports.id, reportId), isNull(discountReports.deletedAt)))
+        .for('update')
+        .limit(1);
+
+      if (!report) return { outcome: 'not_found' };
+      if (!REVIEWABLE_STATUSES.includes(report.status as (typeof REVIEWABLE_STATUSES)[number])) {
+        return { outcome: 'closed', report };
+      }
+
+      const [updated] = await tx
+        .update(discountReports)
+        .set({
+          status: 'rejected',
+          rejectReason: reason,
+          metadata: { reviewedBy: reviewerId, reviewedAt: new Date().toISOString() },
+          updatedAt: new Date(),
+          version: sql`${discountReports.version} + 1`,
+        })
+        .where(eq(discountReports.id, reportId))
+        .returning();
+
+      return { outcome: 'rejected', report: updated ?? report };
+    });
   }
 
   /** "이 정보 맞아요" — 1인1회 + 3인 도달 시 자동등록을 단일 트랜잭션으로 처리. */
