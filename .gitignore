@@ -30,3 +30,6 @@ coverage/
 
 # misc
 *.local
+
+# restored chat transcripts (personal, not for public repo)
+restored-chat-*.md

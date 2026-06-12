@@ -1,0 +1,26 @@
+{
+  "name": "catch-coffee",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "@catch-coffee/tsconfig": "workspace:*",
+    "@types/node": "^22.0.0",
+    "prettier": "^3.4.2",
+    "turbo": "^2.9.10",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "packageManager": "pnpm@10.32.1"
+}
