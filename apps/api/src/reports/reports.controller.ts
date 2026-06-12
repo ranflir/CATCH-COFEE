@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 import { Public } from '../common/decorators/public.decorator';
+import { Idempotent } from '../common/decorators/idempotent.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { CreateReportSchema, type CreateReportDto } from './dto/create-report.dto';
@@ -22,6 +23,7 @@ export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
   @Post('cafes/:cafeId/reports')
+  @Idempotent()
   @HttpCode(HttpStatus.CREATED)
   create(
     @Param('cafeId') cafeId: string,
