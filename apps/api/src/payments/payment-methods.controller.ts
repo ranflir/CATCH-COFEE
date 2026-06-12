@@ -10,6 +10,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { PaymentMethodsService } from './payment-methods.service';
+import { Idempotent } from '../common/decorators/idempotent.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
@@ -32,6 +33,7 @@ export class PaymentMethodsController {
   }
 
   @Post()
+  @Idempotent()
   @HttpCode(HttpStatus.CREATED)
   create(
     @CurrentUser() user: JwtPayload,
