@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { CafesModule } from './cafes/cafes.module';
 import { DiscountsModule } from './discounts/discounts.module';
 import { ReportsModule } from './reports/reports.module';
+import { PaymentsModule } from './payments/payments.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -25,6 +26,7 @@ import { HealthModule } from './health/health.module';
     CafesModule,
     DiscountsModule,
     ReportsModule,
+    PaymentsModule,
     HealthModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
