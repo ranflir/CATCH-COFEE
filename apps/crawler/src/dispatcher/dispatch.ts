@@ -1,4 +1,4 @@
-import { and, eq, gte, isNull, sql } from 'drizzle-orm';
+import { and, eq, gte, inArray, isNull, sql } from 'drizzle-orm';
 import {
   getDb,
   discounts,
@@ -10,7 +10,13 @@ import {
   type Notification,
 } from '@catch-coffee/db';
 import { log } from '../logger';
-import { buildExpoMessages, sendExpoPush } from './push';
+import {
+  buildExpoMessages,
+  collectInvalidTokensFromReceipts,
+  collectInvalidTokensFromTickets,
+  getExpoReceipts,
+  sendExpoPush,
+} from './push';
 
 type NotifyType = Extract<Notification['type'], 'cafe_discount' | 'payment_discount'>;
 
@@ -129,5 +135,44 @@ async function pushToDevices(
       data: { discountId: discount.id, cafeId: discount.cafeId, type },
     },
   );
-  await sendExpoPush(messages);
+  if (messages.length === 0) {
+    return;
+  }
+
+  const tickets = await sendExpoPush(messages);
+
+  // 1) send 단계에서 즉시 판별되는 무효 토큰
+  const invalid = new Set(collectInvalidTokensFromTickets(messages, tickets));
+
+  // 2) 정상 접수된 ticket 의 receipt 로 추가 판별 (best-effort)
+  const tokenByTicketId = new Map<string, string>();
+  tickets.forEach((ticket, i) => {
+    if (ticket.status === 'ok' && ticket.id) {
+      const token = messages[i]?.to;
+      if (token) tokenByTicketId.set(ticket.id, token);
+    }
+  });
+  if (tokenByTicketId.size > 0) {
+    const receipts = await getExpoReceipts([...tokenByTicketId.keys()]);
+    for (const token of collectInvalidTokensFromReceipts(tokenByTicketId, receipts)) {
+      invalid.add(token);
+    }
+  }
+
+  await pruneDeadTokens(db, [...invalid]);
+}
+
+/** 무효 토큰을 soft-delete 해 다음 발송 대상에서 제외. */
+async function pruneDeadTokens(
+  db: ReturnType<typeof getDb>,
+  tokens: string[],
+): Promise<void> {
+  if (tokens.length === 0) {
+    return;
+  }
+  await db
+    .update(userDevices)
+    .set({ deletedAt: new Date() })
+    .where(and(inArray(userDevices.expoPushToken, tokens), isNull(userDevices.deletedAt)));
+  log(`dispatch: pruned ${tokens.length} dead device token(s)`);
 }
