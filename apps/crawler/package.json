@@ -1,0 +1,24 @@
+{
+  "name": "@catch-coffee/crawler",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/main.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@catch-coffee/db": "workspace:*",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.36.4"
+  },
+  "devDependencies": {
+    "@catch-coffee/eslint-config": "workspace:*",
+    "@catch-coffee/tsconfig": "workspace:*",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.7.0"
+  }
+}
