@@ -99,6 +99,28 @@ catch-coffee/
 | [`docs/04-내부-API-목록.md`](docs/04-내부-API-목록.md) | 서비스 내부 REST API 목록 |
 | [`docs/05-외부연동-가이드.md`](docs/05-외부연동-가이드.md) | 외부 API 탐색 + 연동 방법 |
 
+## ⚙️ 운영 환경변수 & 시크릿
+
+전체 키 목록은 [`.env.example`](.env.example) 참고. 핵심 통합별 필요 값:
+
+| 통합 | 필요 env | 미설정 시 동작 |
+|---|---|---|
+| **S3 영수증 업로드** (`apps/api` UploadsService) | `AWS_REGION`, `S3_BUCKET`, (+ AWS 자격증명: 로컬은 `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`, 배포는 IAM Role 권장), 선택 `S3_PUBLIC_BASE_URL` | presign 요청 시 `getOrThrow` 로 에러 |
+| **Redis 멱등성** (`Idempotency-Key`) | `REDIS_URL` | 인터셉터 no-op 통과 (멱등성 미적용) |
+| **Expo 푸시** (`apps/crawler` 디스패처) | `EXPO_ACCESS_TOKEN` (선택) | 인증 헤더 없이 전송 시도, `DeviceNotRegistered` 토큰은 자동 soft-delete |
+
+### GitHub Actions 설정 (크롤러 워크플로)
+
+[`.github/workflows/crawler.yml`](.github/workflows/crawler.yml) 는 매시 정각 + 수동 트리거로 수집/알림을 실행한다. 다음을 리포지토리에 등록한다:
+
+- **Variables** (Settings → Secrets and variables → Actions → Variables)
+  - `CRAWLER_ENABLED` = `true` (이 값이 `true` 일 때만 잡 실행)
+- **Secrets** (동일 화면 → Secrets)
+  - `DATABASE_URL` — 운영 DB 접속 문자열
+  - `EXPO_ACCESS_TOKEN` — Expo 푸시 토큰 (선택, 미설정 가능)
+
+> CI 테스트(e2e)용 시크릿(`DATABASE_URL`, `JWT_*`, `ENCRYPTION_KEY`, `REDIS_URL`)은 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) 의 서비스 컨테이너에서 주입된다.
+
 ## 🚦 프로젝트 상태
 
 🟢 **설계 단계** — 기술 스택 확정(옵션 A: NestJS 모노레포). **DB 스키마(`packages/db`) 작성 완료** (15개 테이블, 초기 migration 생성). API 구현 예정.
