@@ -5,10 +5,12 @@ import {
   favorites,
   paymentAlerts,
   notifications,
+  userDevices,
   type Discount,
   type Notification,
 } from '@catch-coffee/db';
 import { log } from '../logger';
+import { buildExpoMessages, sendExpoPush } from './push';
 
 type NotifyType = Extract<Notification['type'], 'cafe_discount' | 'payment_discount'>;
 
@@ -103,7 +105,29 @@ async function notifyOnce(
     data: { discountId: discount.id, cafeId: discount.cafeId },
   });
 
-  // TODO: user_devices 의 푸시 토큰으로 FCM/Expo 전송
+  await pushToDevices(db, userId, type, discount);
   log(`notify ${userId} (${type}) discount=${discount.id}`);
   return true;
+}
+
+async function pushToDevices(
+  db: ReturnType<typeof getDb>,
+  userId: string,
+  type: NotifyType,
+  discount: Discount,
+): Promise<void> {
+  const devices = await db
+    .select({ token: userDevices.expoPushToken })
+    .from(userDevices)
+    .where(and(eq(userDevices.userId, userId), isNull(userDevices.deletedAt)));
+
+  const messages = buildExpoMessages(
+    devices.map((d) => d.token),
+    {
+      title: '새로운 할인 정보',
+      body: discount.title,
+      data: { discountId: discount.id, cafeId: discount.cafeId, type },
+    },
+  );
+  await sendExpoPush(messages);
 }
