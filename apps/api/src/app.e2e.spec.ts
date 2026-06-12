@@ -112,7 +112,13 @@ describeDb('API e2e (DB 필요)', () => {
     const discountsRes = await request(app.getHttpServer())
       .get(`${PREFIX}/cafes/${cafeId}/discounts`)
       .expect(200);
-    const titles = (discountsRes.body.data as Array<{ title: string }>).map((d) => d.title);
+    const groups = discountsRes.body.data.discounts as Record<
+      string,
+      Array<{ title: string }>
+    >;
+    const titles = Object.values(groups)
+      .flat()
+      .map((d) => d.title);
     expect(titles).toContain('아메리카노 10% 할인');
   });
 
