@@ -99,6 +99,11 @@ catch-coffee/
 | [`docs/04-내부-API-목록.md`](docs/04-내부-API-목록.md) | 서비스 내부 REST API 목록 |
 | [`docs/05-외부연동-가이드.md`](docs/05-외부연동-가이드.md) | 외부 API 탐색 + 연동 방법 |
 
+## 🌐 배포 (Railway)
+
+- API: `https://catch-coffeecrawler-production.up.railway.app` (`GET /api/v1/health`)
+- main 푸시 시 GitHub 연동으로 자동 배포 (`railway.json` 빌드/실행 설정)
+
 ## ⚙️ 운영 환경변수 & 시크릿
 
 전체 키 목록은 [`.env.example`](.env.example) 참고. 핵심 통합별 필요 값:
