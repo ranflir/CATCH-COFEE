@@ -1,10 +1,16 @@
 name: CI
 
+# main · develop push/PR 시 lint·typecheck·build·test.
+# Railway 배포는 main CI 성공 후 deploy.yml 에서만 실행.
 on:
   push:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ci:
@@ -28,6 +34,10 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/catchcoffee_test
+      JWT_ACCESS_SECRET: ci-jwt-access-secret-at-least-32-characters-long
+      JWT_REFRESH_SECRET: ci-jwt-refresh-secret-at-least-32-characters-long
+      ENCRYPTION_KEY: ci-encryption-key-at-least-32-characters-long
+      NEXT_PUBLIC_API_URL: http://localhost:3000
 
     steps:
       - uses: actions/checkout@v4
