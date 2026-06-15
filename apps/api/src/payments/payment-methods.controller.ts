@@ -9,20 +9,23 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PaymentMethodsService } from './payment-methods.service';
 import { Idempotent } from '../common/decorators/idempotent.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
   CreatePaymentMethodSchema,
-  type CreatePaymentMethodDto,
+  CreatePaymentMethodDto,
 } from './dto/create-payment-method.dto';
 import {
   UpdatePaymentMethodSchema,
-  type UpdatePaymentMethodDto,
+  UpdatePaymentMethodDto,
 } from './dto/update-payment-method.dto';
 import type { JwtPayload } from '../common/types/jwt-payload.type';
 
+@ApiTags('payment-methods')
+@ApiBearerAuth('access-token')
 @Controller('me/payment-methods')
 export class PaymentMethodsController {
   constructor(private readonly service: PaymentMethodsService) {}

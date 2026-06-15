@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 
 /** 검수 승인 시 파싱 결과를 보정/확정하기 위한 override (선택) */
 export const ApproveCandidateSchema = z.object({
@@ -7,4 +8,4 @@ export const ApproveCandidateSchema = z.object({
   discountType: z.enum(['percentage', 'amount']).optional(),
   discountValue: z.number().positive().optional(),
 });
-export type ApproveCandidateDto = z.infer<typeof ApproveCandidateSchema>;
+export class ApproveCandidateDto extends createZodDto(ApproveCandidateSchema) {}

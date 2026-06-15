@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 
 /** bbox = "minLng,minLat,maxLng,maxLat" (지도 영역) */
 export const CafeMapSchema = z
@@ -21,4 +22,4 @@ export const CafeMapSchema = z
     limit: z.coerce.number().int().min(1).max(500).default(200),
   });
 
-export type CafeMapDto = z.infer<typeof CafeMapSchema>;
+export class CafeMapDto extends createZodDto(CafeMapSchema) {}

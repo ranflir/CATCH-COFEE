@@ -1,12 +1,14 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { Public } from '../common/decorators/public.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { SignupSchema, type SignupDto } from './dto/signup.dto';
-import { LoginSchema, type LoginDto } from './dto/login.dto';
-import { RefreshSchema, type RefreshDto } from './dto/refresh.dto';
+import { SignupSchema, SignupDto } from './dto/signup.dto';
+import { LoginSchema, LoginDto } from './dto/login.dto';
+import { RefreshSchema, RefreshDto } from './dto/refresh.dto';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

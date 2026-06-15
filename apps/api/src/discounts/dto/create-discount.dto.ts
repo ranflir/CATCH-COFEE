@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
+import { isoDate } from '../../common/zod/iso-date';
 
 export const CreateDiscountSchema = z
   .object({
@@ -8,8 +10,8 @@ export const CreateDiscountSchema = z
     targetScope: z.enum(['all', 'menu']).default('all'),
     conditions: z.record(z.string(), z.unknown()).optional(),
     paymentType: z.enum(['naverpay', 'kakaopay', 'card', 'other']).optional(),
-    startAt: z.coerce.date().optional(),
-    endAt: z.coerce.date().optional(),
+    startAt: isoDate.optional(),
+    endAt: isoDate.optional(),
   })
   .refine((v) => v.discountType !== 'percentage' || v.discountValue <= 100, {
     message: '정률 할인은 0~100% 범위여야 합니다.',
@@ -20,4 +22,4 @@ export const CreateDiscountSchema = z
     path: ['endAt'],
   });
 
-export type CreateDiscountDto = z.infer<typeof CreateDiscountSchema>;
+export class CreateDiscountDto extends createZodDto(CreateDiscountSchema) {}

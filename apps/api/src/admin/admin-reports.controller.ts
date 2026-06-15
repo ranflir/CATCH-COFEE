@@ -8,14 +8,17 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdminReportsService } from './admin-reports.service';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { ReviewQueueSchema, type ReviewQueueDto } from './dto/review-queue.dto';
-import { RejectReportSchema, type RejectReportDto } from './dto/reject-report.dto';
+import { ReviewQueueSchema, ReviewQueueDto } from './dto/review-queue.dto';
+import { RejectReportSchema, RejectReportDto } from './dto/reject-report.dto';
 import type { JwtPayload } from '../common/types/jwt-payload.type';
 
+@ApiTags('admin')
+@ApiBearerAuth('access-token')
 @Controller('admin/reports')
 @Roles('admin')
 export class AdminReportsController {

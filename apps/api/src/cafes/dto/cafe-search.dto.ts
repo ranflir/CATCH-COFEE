@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 
 export const CafeSearchSchema = z
   .object({
@@ -17,4 +18,4 @@ export const CafeSearchSchema = z
     message: '거리순 정렬에는 lat/lng가 필요합니다.',
   });
 
-export type CafeSearchDto = z.infer<typeof CafeSearchSchema>;
+export class CafeSearchDto extends createZodDto(CafeSearchSchema) {}

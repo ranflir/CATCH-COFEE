@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 
 export const CafeDetailQuerySchema = z
   .object({
@@ -9,4 +10,4 @@ export const CafeDetailQuerySchema = z
     message: 'lat과 lng는 함께 제공해야 합니다.',
   });
 
-export type CafeDetailQueryDto = z.infer<typeof CafeDetailQuerySchema>;
+export class CafeDetailQueryDto extends createZodDto(CafeDetailQuerySchema) {}

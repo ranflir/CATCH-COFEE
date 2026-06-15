@@ -8,24 +8,27 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CrawlCandidatesService } from './crawl-candidates.service';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
   CrawlCandidateQueueSchema,
-  type CrawlCandidateQueueDto,
+  CrawlCandidateQueueDto,
 } from './dto/crawl-candidate-queue.dto';
 import {
   ApproveCandidateSchema,
-  type ApproveCandidateDto,
+  ApproveCandidateDto,
 } from './dto/approve-candidate.dto';
 import {
   RejectCandidateSchema,
-  type RejectCandidateDto,
+  RejectCandidateDto,
 } from './dto/reject-candidate.dto';
 import type { JwtPayload } from '../common/types/jwt-payload.type';
 
+@ApiTags('admin')
+@ApiBearerAuth('access-token')
 @Controller('admin/crawl-candidates')
 @Roles('admin')
 export class CrawlCandidatesController {

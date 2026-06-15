@@ -8,15 +8,18 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DevicesService } from './devices.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
   RegisterDeviceSchema,
-  type RegisterDeviceDto,
+  RegisterDeviceDto,
 } from './dto/register-device.dto';
 import type { JwtPayload } from '../common/types/jwt-payload.type';
 
+@ApiTags('devices')
+@ApiBearerAuth('access-token')
 @Controller('me/devices')
 export class DevicesController {
   constructor(private readonly service: DevicesService) {}

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 
 export const UpdatePaymentMethodSchema = z
   .object({
@@ -10,4 +11,6 @@ export const UpdatePaymentMethodSchema = z
     message: '수정할 필드가 최소 하나 필요합니다.',
   });
 
-export type UpdatePaymentMethodDto = z.infer<typeof UpdatePaymentMethodSchema>;
+export class UpdatePaymentMethodDto extends createZodDto(
+  UpdatePaymentMethodSchema,
+) {}

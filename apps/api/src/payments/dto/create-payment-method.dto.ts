@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 
 export const CreatePaymentMethodSchema = z.object({
   type: z.enum(['naverpay', 'kakaopay', 'card', 'other']),
@@ -8,4 +9,6 @@ export const CreatePaymentMethodSchema = z.object({
   isDefault: z.boolean().optional(),
 });
 
-export type CreatePaymentMethodDto = z.infer<typeof CreatePaymentMethodSchema>;
+export class CreatePaymentMethodDto extends createZodDto(
+  CreatePaymentMethodSchema,
+) {}

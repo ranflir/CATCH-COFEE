@@ -9,17 +9,20 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PaymentAlertsService } from './payment-alerts.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
   AddPaymentAlertSchema,
   PaymentTypeSchema,
-  type AddPaymentAlertDto,
+  AddPaymentAlertDto,
 } from './dto/payment-alert.dto';
 import { ErrorCode } from '../common/constants/error-codes';
 import type { JwtPayload } from '../common/types/jwt-payload.type';
 
+@ApiTags('payment-alerts')
+@ApiBearerAuth('access-token')
 @Controller('me/payment-alerts')
 export class PaymentAlertsController {
   constructor(private readonly service: PaymentAlertsService) {}

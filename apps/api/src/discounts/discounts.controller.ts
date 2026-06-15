@@ -9,15 +9,18 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DiscountsService } from './discounts.service';
 import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { CreateDiscountSchema, type CreateDiscountDto } from './dto/create-discount.dto';
-import { UpdateDiscountSchema, type UpdateDiscountDto } from './dto/update-discount.dto';
+import { CreateDiscountSchema, CreateDiscountDto } from './dto/create-discount.dto';
+import { UpdateDiscountSchema, UpdateDiscountDto } from './dto/update-discount.dto';
 import type { JwtPayload } from '../common/types/jwt-payload.type';
 
+@ApiTags('discounts')
+@ApiBearerAuth('access-token')
 @Controller()
 export class DiscountsController {
   constructor(private readonly discountsService: DiscountsService) {}

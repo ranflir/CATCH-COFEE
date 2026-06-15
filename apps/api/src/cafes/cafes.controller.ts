@@ -1,11 +1,13 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CafesService } from './cafes.service';
 import { Public } from '../common/decorators/public.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { CafeSearchSchema, type CafeSearchDto } from './dto/cafe-search.dto';
-import { CafeMapSchema, type CafeMapDto } from './dto/cafe-map.dto';
-import { CafeDetailQuerySchema, type CafeDetailQueryDto } from './dto/cafe-detail.dto';
+import { CafeSearchSchema, CafeSearchDto } from './dto/cafe-search.dto';
+import { CafeMapSchema, CafeMapDto } from './dto/cafe-map.dto';
+import { CafeDetailQuerySchema, CafeDetailQueryDto } from './dto/cafe-detail.dto';
 
+@ApiTags('cafes')
 @Controller('cafes')
 export class CafesController {
   constructor(private readonly cafesService: CafesService) {}

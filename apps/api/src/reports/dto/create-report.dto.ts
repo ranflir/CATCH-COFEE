@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
+import { isoDate } from '../../common/zod/iso-date';
 
 export const CreateReportSchema = z
   .object({
@@ -9,8 +11,8 @@ export const CreateReportSchema = z
     infoSource: z.enum(['offline', 'receipt', 'store_notice', 'witnessed']),
     // 영수증/사진 필수 (스키마 NOT NULL). 업로드는 별도(추후 presigned), 여기선 URL 수신.
     receiptImageUrl: z.string().url().max(2048),
-    startAt: z.coerce.date().optional(),
-    endAt: z.coerce.date().optional(),
+    startAt: isoDate.optional(),
+    endAt: isoDate.optional(),
   })
   .refine((v) => v.discountType !== 'percentage' || v.discountValue <= 100, {
     message: '정률 할인은 0~100% 범위여야 합니다.',
@@ -21,4 +23,4 @@ export const CreateReportSchema = z
     path: ['endAt'],
   });
 
-export type CreateReportDto = z.infer<typeof CreateReportSchema>;
+export class CreateReportDto extends createZodDto(CreateReportSchema) {}

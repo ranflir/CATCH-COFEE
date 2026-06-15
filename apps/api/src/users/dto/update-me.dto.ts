@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 
 export const UpdateMeSchema = z
   .object({
@@ -9,4 +10,4 @@ export const UpdateMeSchema = z
     message: 'At least one field is required',
   });
 
-export type UpdateMeDto = z.infer<typeof UpdateMeSchema>;
+export class UpdateMeDto extends createZodDto(UpdateMeSchema) {}

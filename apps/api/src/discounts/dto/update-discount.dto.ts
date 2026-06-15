@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
+import { isoDate } from '../../common/zod/iso-date';
 
 export const UpdateDiscountSchema = z
   .object({
@@ -8,8 +10,8 @@ export const UpdateDiscountSchema = z
     targetScope: z.enum(['all', 'menu']).optional(),
     conditions: z.record(z.string(), z.unknown()).optional(),
     paymentType: z.enum(['naverpay', 'kakaopay', 'card', 'other']).optional(),
-    startAt: z.coerce.date().optional(),
-    endAt: z.coerce.date().optional(),
+    startAt: isoDate.optional(),
+    endAt: isoDate.optional(),
     // 조기 종료/숨김 등 상태 전환
     status: z.enum(['scheduled', 'active', 'ended', 'hidden']).optional(),
   })
@@ -28,4 +30,4 @@ export const UpdateDiscountSchema = z
     path: ['endAt'],
   });
 
-export type UpdateDiscountDto = z.infer<typeof UpdateDiscountSchema>;
+export class UpdateDiscountDto extends createZodDto(UpdateDiscountSchema) {}

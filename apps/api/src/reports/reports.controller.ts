@@ -9,15 +9,18 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ReportsService } from './reports.service';
 import { Public } from '../common/decorators/public.decorator';
 import { Idempotent } from '../common/decorators/idempotent.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { CreateReportSchema, type CreateReportDto } from './dto/create-report.dto';
-import { MyReportsQuerySchema, type MyReportsQueryDto } from './dto/my-reports.dto';
+import { CreateReportSchema, CreateReportDto } from './dto/create-report.dto';
+import { MyReportsQuerySchema, MyReportsQueryDto } from './dto/my-reports.dto';
 import type { JwtPayload } from '../common/types/jwt-payload.type';
 
+@ApiTags('reports')
+@ApiBearerAuth('access-token')
 @Controller()
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}

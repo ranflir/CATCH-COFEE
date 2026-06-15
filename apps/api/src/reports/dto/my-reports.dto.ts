@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 
 export const MyReportsQuerySchema = z.object({
   status: z
@@ -6,4 +7,4 @@ export const MyReportsQuerySchema = z.object({
     .optional(),
 });
 
-export type MyReportsQueryDto = z.infer<typeof MyReportsQuerySchema>;
+export class MyReportsQueryDto extends createZodDto(MyReportsQuerySchema) {}

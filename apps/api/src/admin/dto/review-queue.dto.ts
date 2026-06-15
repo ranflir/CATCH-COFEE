@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 
 export const ReviewQueueSchema = z.object({
   status: z
@@ -7,4 +8,4 @@ export const ReviewQueueSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
-export type ReviewQueueDto = z.infer<typeof ReviewQueueSchema>;
+export class ReviewQueueDto extends createZodDto(ReviewQueueSchema) {}

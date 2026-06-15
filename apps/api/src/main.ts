@@ -1,4 +1,6 @@
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { AppModule } from './app.module';
 import { ResponseFormatInterceptor } from './common/interceptors/response-format.interceptor';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -46,6 +48,22 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ResponseFormatInterceptor());
   app.useGlobalFilters(new AllExceptionsFilter());
+
+  // OpenAPI 문서: /docs (UI), /docs-json (raw spec). 프론트 연동 규격용.
+  // (globalPrefix 'api/v1' 은 Swagger 경로엔 적용되지 않음)
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Catch Coffee API')
+    .setDescription('카페 할인/결제수단 추천 서비스 API')
+    .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'access-token',
+    )
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('docs', app, cleanupOpenApiDoc(document), {
+    swaggerOptions: { persistAuthorization: true },
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }

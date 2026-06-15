@@ -8,15 +8,18 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
   ListNotificationsSchema,
-  type ListNotificationsDto,
+  ListNotificationsDto,
 } from './dto/list-notifications.dto';
 import type { JwtPayload } from '../common/types/jwt-payload.type';
 
+@ApiTags('notifications')
+@ApiBearerAuth('access-token')
 @Controller('me/notifications')
 export class NotificationsController {
   constructor(private readonly service: NotificationsService) {}

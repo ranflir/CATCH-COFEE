@@ -9,17 +9,20 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { FavoritesService } from './favorites.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
   AddFavoriteSchema,
-  type AddFavoriteDto,
+  AddFavoriteDto,
   UpdateFavoriteSchema,
-  type UpdateFavoriteDto,
+  UpdateFavoriteDto,
 } from './dto/favorite.dto';
 import type { JwtPayload } from '../common/types/jwt-payload.type';
 
+@ApiTags('favorites')
+@ApiBearerAuth('access-token')
 @Controller()
 export class FavoritesController {
   constructor(private readonly service: FavoritesService) {}

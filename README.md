@@ -102,6 +102,7 @@ catch-coffee/
 ## 🌐 배포 (Railway)
 
 - API: `https://catch-coffeecrawler-production.up.railway.app` (`GET /api/v1/health`)
+- **API 문서(Swagger UI)**: `/docs` · OpenAPI JSON: `/docs-json` (Zod 스키마 기반 자동 생성)
 - main 푸시 시 GitHub 연동으로 자동 배포 (`railway.json` 빌드/실행 설정, branch=main)
 
 ## ⚙️ 운영 환경변수 & 시크릿

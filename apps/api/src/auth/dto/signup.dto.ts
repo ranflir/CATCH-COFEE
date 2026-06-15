@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 
 export const SignupSchema = z.object({
   email: z.string().email().max(255),
@@ -8,4 +9,4 @@ export const SignupSchema = z.object({
   phone: z.string().max(20).optional(),
 });
 
-export type SignupDto = z.infer<typeof SignupSchema>;
+export class SignupDto extends createZodDto(SignupSchema) {}
