@@ -18,6 +18,7 @@
     "build": "tsc -p tsconfig.build.json",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:seed": "node dist/seed.js",
     "db:studio": "drizzle-kit studio",
     "typecheck": "tsc --noEmit"
   },

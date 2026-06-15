@@ -52,7 +52,7 @@ export class CafesRepository {
 
     const ordered =
       hasCoords && sort === 'distance'
-        ? base.orderBy(sql`distance_m`)
+        ? base.orderBy(distanceExpr)
         : base.orderBy(asc(cafes.name));
 
     const rows = await ordered.limit(limit).offset((page - 1) * limit);
