@@ -98,6 +98,7 @@ catch-coffee/
 | [`docs/03-karpathy-분석.md`](docs/03-karpathy-분석.md) | 기획 가정·리스크·단순화 분석 |
 | [`docs/04-내부-API-목록.md`](docs/04-내부-API-목록.md) | 서비스 내부 REST API 목록 |
 | [`docs/05-외부연동-가이드.md`](docs/05-외부연동-가이드.md) | 외부 API 탐색 + 연동 방법 |
+| [`docs/06-S3-R2-설정.md`](docs/06-S3-R2-설정.md) | R2/S3 영수증 업로드 presign 설정 |
 
 ## 🌐 배포 (Railway)
 
@@ -111,7 +112,7 @@ catch-coffee/
 
 | 통합 | 필요 env | 미설정 시 동작 |
 |---|---|---|
-| **S3 영수증 업로드** (`apps/api` UploadsService) | `AWS_REGION`, `S3_BUCKET`, (+ AWS 자격증명: 로컬은 `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`, 배포는 IAM Role 권장), 선택 `S3_PUBLIC_BASE_URL` | presign 요청 시 `getOrThrow` 로 에러 |
+| **S3 영수증 업로드** (`apps/api` UploadsService) | `S3_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, R2 시 `S3_ENDPOINT` + **`S3_PUBLIC_BASE_URL` 필수** | presign 요청 시 env 미설정이면 에러. [`docs/06-S3-R2-설정.md`](docs/06-S3-R2-설정.md) |
 | **Redis 멱등성** (`Idempotency-Key`) | `REDIS_URL` | 인터셉터 no-op 통과 (멱등성 미적용) |
 | **Expo 푸시** (`apps/crawler` 디스패처) | `EXPO_ACCESS_TOKEN` (선택) | 인증 헤더 없이 전송 시도, `DeviceNotRegistered` 토큰은 자동 soft-delete |
 

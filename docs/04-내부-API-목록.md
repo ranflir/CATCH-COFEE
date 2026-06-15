@@ -42,7 +42,7 @@
 | GET | `/me/reports?status=` | 🟢 | 내 제보 내역(상태 필터) |
 | POST | `/reports/:id/confirm` | 🟢 | "이 정보 맞아요"(1인 1회) → 3인 도달 시 자동등록 |
 | DELETE | `/reports/:id/confirm` | 🟢 | 확인 취소(자동등록 전까지만) |
-| POST | `/uploads/receipts` | 🟢 | 영수증 이미지 업로드(presigned URL 발급) |
+| POST | `/uploads/receipt-presign` | 🟢 | 영수증 presigned PUT URL 발급 |
 
 ## 5. 결제수단 / 추천 (기능 3, 5)
 | Method | Path | 권한 | 설명 |
