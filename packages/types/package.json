@@ -1,0 +1,27 @@
+{
+  "name": "@catch-coffee/types",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./openapi": {
+      "types": "./dist/generated/openapi.d.ts"
+    }
+  },
+  "scripts": {
+    "codegen": "openapi-typescript openapi.json -o src/generated/openapi.d.ts",
+    "build": "pnpm codegen && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.10.1",
+    "typescript": "^5.7.0"
+  }
+}

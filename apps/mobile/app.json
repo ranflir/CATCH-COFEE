@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Catch Coffee",
+    "slug": "catch-coffee",
+    "version": "1.0.0",
+    "scheme": "catchcoffee",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.catchcoffee.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#6f4e37"
+      },
+      "package": "com.catchcoffee.app"
+    },
+    "plugins": ["expo-router", "expo-notifications"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
