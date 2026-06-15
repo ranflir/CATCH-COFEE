@@ -19,8 +19,28 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api/v1');
 
+  // 허용 오리진: 로컬 개발 기본값 + FRONTEND_URL(콤마 구분 다중 오리진).
+  // credentials:true 이므로 '*' 사용 불가 → 명시적 allowlist 로 검사.
+  const stripSlash = (s: string) => s.trim().replace(/\/$/, '');
+  const allowedOrigins = new Set(
+    ['http://localhost:3000', 'http://localhost:3001']
+      .concat((process.env.FRONTEND_URL ?? '').split(','))
+      .map(stripSlash)
+      .filter(Boolean),
+  );
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL?.replace(/\/$/, '') ?? '*',
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
+      // origin 없음(서버-서버, curl, 동일 오리진) 은 허용.
+      if (!origin || allowedOrigins.has(stripSlash(origin))) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error(`CORS: origin ${origin} 허용되지 않음`));
+    },
     credentials: true,
   });
 
