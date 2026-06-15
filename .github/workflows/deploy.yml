@@ -1,0 +1,30 @@
+name: Deploy
+
+# CI(빌드/테스트) 성공 후에만 Railway 배포. main 한정.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Railway Deploy (API)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+
+      # --detach: 업로드 후 즉시 반환. watch path 미일치(문서만 변경) 시
+      # 빌드가 skip 돼도 행(hang) 안 걸리게 함. 실제 빌드 결과는 Railway 대시보드 확인.
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --detach --service "@catch-coffee/api"
