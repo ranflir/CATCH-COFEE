@@ -2,6 +2,7 @@
   "extends": "@catch-coffee/tsconfig/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "typeRoots": ["./node_modules/@types"],
     "paths": {
       "@/*": [
         "./src/*"
