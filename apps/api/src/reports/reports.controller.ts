@@ -45,6 +45,12 @@ export class ReportsController {
   }
 
   @Public()
+  @Get('cafes/:cafeId/reports/pending')
+  listPendingForCafe(@Param('cafeId') cafeId: string) {
+    return this.reportsService.listConfirmableForCafe(cafeId);
+  }
+
+  @Public()
   @Get('reports/:id')
   getOne(@Param('id') id: string) {
     return this.reportsService.getReport(id);

@@ -7,6 +7,20 @@ import { DRIZZLE, type DrizzleDB } from '../database/database.module';
 export class DiscountsRepository {
   constructor(@Inject(DRIZZLE) private readonly db: DrizzleDB) {}
 
+  async findSellerByCafe(cafeId: string): Promise<Discount[]> {
+    return this.db
+      .select()
+      .from(discounts)
+      .where(
+        and(
+          eq(discounts.cafeId, cafeId),
+          eq(discounts.source, 'seller'),
+          isNull(discounts.deletedAt),
+        ),
+      )
+      .orderBy(desc(discounts.createdAt));
+  }
+
   async findActiveByCafe(cafeId: string): Promise<Discount[]> {
     return this.db
       .select()

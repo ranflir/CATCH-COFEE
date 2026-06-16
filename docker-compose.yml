@@ -3,7 +3,7 @@ services:
     image: postgres:17
     container_name: catchcoffee_postgres
     ports:
-      - '5432:5432'
+      - '5433:5432'
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass}

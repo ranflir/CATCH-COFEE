@@ -71,6 +71,21 @@ export class ReportsRepository {
       .orderBy(desc(discountReports.createdAt));
   }
 
+  /** 카페별 확인 가능 제보 (pending/reviewing) — 공개 목록용 */
+  async findConfirmableByCafe(cafeId: string): Promise<DiscountReport[]> {
+    return this.db
+      .select()
+      .from(discountReports)
+      .where(
+        and(
+          eq(discountReports.cafeId, cafeId),
+          isNull(discountReports.deletedAt),
+          inArray(discountReports.status, ['pending', 'reviewing']),
+        ),
+      )
+      .orderBy(desc(discountReports.createdAt));
+  }
+
   /** 관리자 검수 큐 — 상태별(기본 pending/reviewing) 오래된 순. */
   listForReview(params: {
     statuses: DiscountReport['status'][];

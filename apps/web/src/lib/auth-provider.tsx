@@ -16,10 +16,12 @@ import {
   type ReactNode,
 } from 'react';
 import { createApiClient } from './api';
+import type { UserProfile } from './user-profile';
 
 type AuthContextValue = {
   isReady: boolean;
   accessToken: string | null;
+  user: UserProfile | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (input: {
     email: string;
@@ -27,6 +29,7 @@ type AuthContextValue = {
     name: string;
   }) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -34,18 +37,43 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isReady, setIsReady] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const client = useMemo(() => createApiClient(), []);
+
+  const refreshUser = useCallback(async () => {
+    const token = loadStoredAuth()?.accessToken;
+    if (!token) {
+      setUser(null);
+      return;
+    }
+
+    try {
+      const profile = await client.request<UserProfile>('/api/v1/me');
+      setUser(profile);
+    } catch {
+      saveStoredAuth(null);
+      setAccessToken(null);
+      setUser(null);
+    }
+  }, [client]);
 
   useEffect(() => {
     const stored = loadStoredAuth();
     setAccessToken(stored?.accessToken ?? null);
     setIsReady(true);
-  }, []);
+    if (stored?.accessToken) {
+      void refreshUser();
+    }
+  }, [refreshUser]);
 
-  const persist = useCallback((tokens: AuthTokens) => {
-    saveStoredAuth(tokens);
-    setAccessToken(tokens.accessToken);
-  }, []);
+  const persist = useCallback(
+    async (tokens: AuthTokens) => {
+      saveStoredAuth(tokens);
+      setAccessToken(tokens.accessToken);
+      await refreshUser();
+    },
+    [refreshUser],
+  );
 
   const login = useCallback(
     async (email: string, password: string) => {
@@ -54,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           method: 'POST',
           body: { email, password },
         });
-        persist(tokens);
+        await persist(tokens);
       } catch (error) {
         if (error instanceof ApiRequestError) throw error;
         throw new Error('로그인에 실패했습니다.');
@@ -69,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: 'POST',
         body: input,
       });
-      persist(tokens);
+      await persist(tokens);
     },
     [client, persist],
   );
@@ -77,11 +105,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     saveStoredAuth(null);
     setAccessToken(null);
+    setUser(null);
   }, []);
 
   const value = useMemo(
-    () => ({ isReady, accessToken, login, signup, logout }),
-    [isReady, accessToken, login, signup, logout],
+    () => ({ isReady, accessToken, user, login, signup, logout, refreshUser }),
+    [isReady, accessToken, user, login, signup, logout, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

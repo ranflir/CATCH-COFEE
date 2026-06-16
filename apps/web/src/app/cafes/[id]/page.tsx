@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { FavoriteButton } from '@/components/favorite-button';
+import { PaymentRecommendation } from '@/components/payment-recommendation';
+import { ReportConfirmPanel } from '@/components/report-confirm-panel';
 import { createApiClient } from '@/lib/api';
 
 type Cafe = {
@@ -15,7 +18,10 @@ type Cafe = {
 
 type DiscountsResponse = {
   cafeId: string;
-  discounts: Record<string, Array<{ id: string; title: string; discountValue: number; discountType: string }>>;
+  discounts: Record<
+    string,
+    Array<{ id: string; title: string; discountValue: number; discountType: string }>
+  >;
 };
 
 export default function CafeDetailPage() {
@@ -54,8 +60,11 @@ export default function CafeDetailPage() {
       <section className="card stack">
         <h1>{cafe.name}</h1>
         {cafe.address && <p>{cafe.address}</p>}
+        <FavoriteButton cafeId={cafe.id} />
         <Link href={`/reports/new?cafeId=${cafe.id}`}>이 카페 할인 제보</Link>
       </section>
+      <ReportConfirmPanel cafeId={cafe.id} />
+      <PaymentRecommendation cafeId={cafe.id} />
       <section className="card stack">
         <h2>할인</h2>
         {allDiscounts.length === 0 && (

@@ -22,6 +22,15 @@ export class DiscountsService {
     return discount;
   }
 
+  async listForCafeManage(cafeId: string, user: JwtPayload): Promise<Discount[]> {
+    const cafe = await this.cafesRepository.findById(cafeId);
+    if (!cafe) {
+      throw new NotFoundException({ code: ErrorCode.CAFE_NOT_FOUND });
+    }
+    this.assertOwnership(cafe.ownerId, user);
+    return this.discountsRepository.findSellerByCafe(cafeId);
+  }
+
   async createForCafe(
     cafeId: string,
     user: JwtPayload,

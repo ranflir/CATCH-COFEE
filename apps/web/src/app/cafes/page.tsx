@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { KakaoCafeMap } from '@/components/kakao-cafe-map';
 import { createApiClient } from '@/lib/api';
 
 type CafeItem = {
@@ -85,7 +86,8 @@ export default function CafesPage() {
   return (
     <div className="stack">
       <h1>주변 카페</h1>
-      {loading && <p className="muted">불러오는 중…</p>}
+      <KakaoCafeMap />
+      {loading && <p className="muted">목록 불러오는 중…</p>}
       {error && <p className="error">{error}</p>}
       <div className="grid two">
         {items.map((cafe) => (

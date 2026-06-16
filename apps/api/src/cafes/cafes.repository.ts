@@ -74,6 +74,22 @@ export class CafesRepository {
     return row;
   }
 
+  async findByOwnerId(ownerId: string): Promise<Cafe[]> {
+    return this.db
+      .select()
+      .from(cafes)
+      .where(and(eq(cafes.ownerId, ownerId), isNull(cafes.deletedAt)))
+      .orderBy(asc(cafes.name));
+  }
+
+  async findAllActive(): Promise<Cafe[]> {
+    return this.db
+      .select()
+      .from(cafes)
+      .where(isNull(cafes.deletedAt))
+      .orderBy(asc(cafes.name));
+  }
+
   async findInBbox(box: {
     minLat: number;
     maxLat: number;

@@ -60,6 +60,10 @@ export class ReportsService {
     return this.reportsRepository.findByReporter(userId, status);
   }
 
+  listConfirmableForCafe(cafeId: string): Promise<DiscountReport[]> {
+    return this.reportsRepository.findConfirmableByCafe(cafeId);
+  }
+
   async confirm(id: string, user: JwtPayload): Promise<ConfirmStateView> {
     const result = await this.reportsRepository.confirm(id, user.id);
     switch (result.outcome) {

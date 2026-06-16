@@ -1,4 +1,18 @@
-import { getDb, brands, cafes, discounts } from './index';
+import { eq } from 'drizzle-orm';
+import {
+  getDb,
+  brands,
+  cafes,
+  discounts,
+  users,
+  discountReports,
+  crawlSources,
+  crawlCandidates,
+} from './index';
+
+/** 개발/테스트 계정 공통 비밀번호: Password123! */
+const DEV_PASSWORD_HASH =
+  '$2a$12$IQ5h5401z7rHIU6OSKISX.SNZd29PlHMDauHjrapJn0tJfupv4uG.';
 
 /**
  * 개발/테스트용 시드 데이터. 고정 id + onConflictDoNothing 으로 멱등.
@@ -6,6 +20,31 @@ import { getDb, brands, cafes, discounts } from './index';
  */
 async function seed(): Promise<void> {
   const db = getDb();
+
+  const userRows = [
+    {
+      id: 'seed_user_demo',
+      email: 'demo@catch.coffee',
+      passwordHash: DEV_PASSWORD_HASH,
+      name: '데모 사용자',
+      role: 'user' as const,
+    },
+    {
+      id: 'seed_user_seller',
+      email: 'seller@catch.coffee',
+      passwordHash: DEV_PASSWORD_HASH,
+      name: '테스트 셀러',
+      role: 'seller' as const,
+    },
+    {
+      id: 'seed_user_admin',
+      email: 'admin@catch.coffee',
+      passwordHash: DEV_PASSWORD_HASH,
+      name: '테스트 관리자',
+      role: 'admin' as const,
+    },
+  ];
+  await db.insert(users).values(userRows).onConflictDoNothing({ target: users.id });
 
   const brandRows = [
     { id: 'seed_brand_mega', name: '메가커피', slug: 'mega', isLowCost: true },
@@ -18,6 +57,7 @@ async function seed(): Promise<void> {
     {
       id: 'seed_cafe_1',
       brandId: 'seed_brand_mega',
+      ownerId: 'seed_user_seller',
       name: '메가커피 강남역점',
       address: '서울 강남구 강남대로 396',
       lat: 37.4979,
@@ -27,6 +67,7 @@ async function seed(): Promise<void> {
     {
       id: 'seed_cafe_2',
       brandId: 'seed_brand_compose',
+      ownerId: 'seed_user_seller',
       name: '컴포즈커피 홍대입구점',
       address: '서울 마포구 양화로 160',
       lat: 37.5572,
@@ -53,6 +94,14 @@ async function seed(): Promise<void> {
     },
   ];
   await db.insert(cafes).values(cafeRows).onConflictDoNothing({ target: cafes.id });
+  await db
+    .update(cafes)
+    .set({ ownerId: 'seed_user_seller' })
+    .where(eq(cafes.id, 'seed_cafe_1'));
+  await db
+    .update(cafes)
+    .set({ ownerId: 'seed_user_seller' })
+    .where(eq(cafes.id, 'seed_cafe_2'));
 
   const discountRows = [
     {
@@ -97,8 +146,58 @@ async function seed(): Promise<void> {
     .values(discountRows)
     .onConflictDoNothing({ target: discounts.id });
 
+  const reportRows = [
+    {
+      id: 'seed_report_pending',
+      cafeId: 'seed_cafe_3',
+      reporterId: 'seed_user_demo',
+      title: '빽다방 시청점 2+1 이벤트',
+      discountType: 'percentage' as const,
+      discountValue: '50',
+      infoSource: 'receipt' as const,
+      receiptImageUrl: 'https://example.com/seed-receipt.jpg',
+      status: 'pending' as const,
+    },
+  ];
+  await db
+    .insert(discountReports)
+    .values(reportRows)
+    .onConflictDoNothing({ target: discountReports.id });
+
+  const crawlSourceRows = [
+    {
+      id: 'seed_crawl_source_1',
+      brandId: 'seed_brand_mega',
+      channel: 'website' as const,
+      url: 'https://example.com/mega/events',
+    },
+  ];
+  await db
+    .insert(crawlSources)
+    .values(crawlSourceRows)
+    .onConflictDoNothing({ target: crawlSources.id });
+
+  const crawlCandidateRows = [
+    {
+      id: 'seed_crawl_candidate_1',
+      sourceId: 'seed_crawl_source_1',
+      cafeId: 'seed_cafe_1',
+      rawText: '메가커피 아메리카노 1000원 할인 이벤트 (3월 한정)',
+      parsed: {
+        title: '아메리카노 1000원 할인',
+        discountType: 'amount',
+        discountValue: 1000,
+      },
+      status: 'pending' as const,
+    },
+  ];
+  await db
+    .insert(crawlCandidates)
+    .values(crawlCandidateRows)
+    .onConflictDoNothing({ target: crawlCandidates.id });
+
   console.log(
-    `seed done: ${brandRows.length} brands, ${cafeRows.length} cafes, ${discountRows.length} discounts`,
+    `seed done: ${userRows.length} users, ${brandRows.length} brands, ${cafeRows.length} cafes, ${discountRows.length} discounts, ${reportRows.length} reports, ${crawlCandidateRows.length} crawl candidates`,
   );
 }
 

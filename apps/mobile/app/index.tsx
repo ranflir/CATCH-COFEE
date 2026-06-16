@@ -5,7 +5,10 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Catch Coffee</Text>
-      <Text style={styles.subtitle}>모바일 앱 MVP 스켈레톤</Text>
+      <Text style={styles.subtitle}>모바일 MVP</Text>
+      <Link href="/login" style={styles.link}>
+        로그인
+      </Link>
       <Link href="/devices" style={styles.link}>
         푸시 토큰 등록 (/me/devices)
       </Link>
