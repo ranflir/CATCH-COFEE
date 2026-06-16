@@ -1,6 +1,16 @@
-      - name: Test
-        run: pnpm turbo run test
+name: Storybook
 
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: storybook-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
   storybook:
     name: Build Storybook
     runs-on: ubuntu-latest
