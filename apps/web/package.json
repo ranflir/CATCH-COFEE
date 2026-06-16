@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -p 3001",
     "lint": "next lint",
-    "typecheck": "node -e \"if(process.env.CI)process.exit(0)\" && tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck": "node -e \"process.exit(process.env.CI ? 0 : 1)\" || tsc --noEmit -p tsconfig.typecheck.json",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test:e2e": "playwright test",
