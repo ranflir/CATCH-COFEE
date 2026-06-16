@@ -5,7 +5,7 @@ const meta = {
   title: 'Components/ReceiptUpload',
   component: ReceiptUpload,
   args: {
-    onUploaded: (_publicUrl: string) => {},
+    onUploaded: () => {},
   },
 } satisfies Meta<typeof ReceiptUpload>;
 
