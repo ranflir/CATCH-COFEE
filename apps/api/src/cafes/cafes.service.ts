@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { Discount } from '@catch-coffee/db';
+import type { Cafe, Discount } from '@catch-coffee/db';
 import { CafesRepository } from './cafes.repository';
 import { DiscountsRepository } from '../discounts/discounts.repository';
 import type { CafeSearchDto } from './dto/cafe-search.dto';
 import type { CafeMapDto } from './dto/cafe-map.dto';
+import type { JwtPayload } from '../common/types/jwt-payload.type';
 import { ErrorCode } from '../common/constants/error-codes';
 
 @Injectable()
@@ -44,6 +45,13 @@ export class CafesService {
       grouped[d.source].push(d);
     }
     return { cafeId: id, discounts: grouped };
+  }
+
+  async listMyCafes(user: JwtPayload): Promise<Cafe[]> {
+    if (user.role === 'admin') {
+      return this.cafesRepository.findAllActive();
+    }
+    return this.cafesRepository.findByOwnerId(user.id);
   }
 
   async getMapMarkers(dto: CafeMapDto) {

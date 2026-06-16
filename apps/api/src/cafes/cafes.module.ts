@@ -7,5 +7,6 @@ import { DiscountsRepository } from '../discounts/discounts.repository';
 @Module({
   controllers: [CafesController],
   providers: [CafesService, CafesRepository, DiscountsRepository],
+  exports: [CafesService, CafesRepository],
 })
 export class CafesModule {}

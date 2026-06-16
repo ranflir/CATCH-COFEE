@@ -32,6 +32,15 @@ export class DiscountsController {
   }
 
   @Roles('seller', 'admin')
+  @Get('cafes/:cafeId/discounts/manage')
+  listForManage(
+    @Param('cafeId') cafeId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.discountsService.listForCafeManage(cafeId, user);
+  }
+
+  @Roles('seller', 'admin')
   @Post('cafes/:cafeId/discounts')
   @HttpCode(HttpStatus.CREATED)
   create(
