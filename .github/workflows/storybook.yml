@@ -29,5 +29,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build types package
+        run: pnpm --filter @catch-coffee/types build
+
       - name: Build Storybook
         run: pnpm --filter @catch-coffee/web build-storybook
