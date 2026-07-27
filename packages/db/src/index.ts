@@ -25,9 +25,20 @@ function createPool(connectionString: string): Pool {
   );
   const relaxSsl =
     isSupabase || process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === 'false';
+
+  if (!relaxSsl) {
+    return new Pool({ connectionString });
+  }
+
+  // sslmode in the URL maps to rejectUnauthorized:true in pg-connection-string
+  // (require ≈ verify-full). Strip it so the explicit ssl option wins.
+  const url = new URL(connectionString);
+  url.searchParams.delete('sslmode');
+  url.searchParams.delete('ssl');
+
   return new Pool({
-    connectionString,
-    ...(relaxSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+    connectionString: url.toString(),
+    ssl: { rejectUnauthorized: false },
   });
 }
 
